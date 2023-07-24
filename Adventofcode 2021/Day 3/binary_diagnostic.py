@@ -38,7 +38,6 @@ def get_position(data):
         if len(epsilon) != 1:
             epsilon = get_list(epsilon, index, bit)
 
-
     return(int("".join(gamma).removesuffix("\n"), 2) * int("".join(epsilon).removesuffix("\n"), 2))
 
 data1 = open("./Day 3/data1", "r").readlines()

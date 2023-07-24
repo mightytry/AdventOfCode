@@ -130,5 +130,4 @@ class ThChSubmission():
 
         return final_beacons
 
-#print(ThChSubmission().run(open("./Day 19/data2").read()))
-print(range(3, 101).start in range(0,200))
+print(ThChSubmission().run(open("./Day 19/data2").read()).__len__())

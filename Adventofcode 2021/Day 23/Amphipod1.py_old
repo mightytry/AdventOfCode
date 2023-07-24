@@ -5,7 +5,6 @@ import sys
 import time
 import timeit
 from functools import cache, lru_cache
-from queue import PriorityQueue
 
 sys.path.insert(0, '.')
 from tools import log
@@ -71,8 +70,7 @@ class Wall():
         return "#"
 
 class Situation():
-    Queue = PriorityQueue()
-    Best = None
+    Best = []
     BestCost = math.inf
 
     def __init__(self, hallway_len, row1, row2, create = True):
@@ -115,7 +113,7 @@ class Situation():
         #Check way to room
         if amphipod.pos.pos < target.pos.pos:
             mi = amphipod.pos.pos+1
-            ma = target.pos.pos+1
+            ma = target.pos.pos-1
         else:
             mi = target.pos.pos
             ma = amphipod.pos.pos
@@ -148,6 +146,7 @@ class Situation():
         else:
             return True
 
+    @lru_cache(maxsize=100000)
     def gen_moves(self, amphipod:Amphipod):  
         if (amphipod.pos.line == Position.ROW2 and ((not isinstance(self.board[Position.ROW1][amphipod.pos.pos], Empty)) or amphipod.pos.pos == amphipod.room_pos)):
             return []
@@ -175,11 +174,10 @@ class Situation():
         return pos_moves
 
     def check_solution(self):
-        n = 0
         for ampi in self.amphis:
             if (ampi.pos.pos != ampi.room_pos or ampi.pos.line == Position.HALLWAY):
-                n+=1
-        return n
+                return False
+        return True
 
     def do_new(self):
         new = Situation(self.hallway_len, [], [], False)
@@ -196,12 +194,27 @@ class Situation():
         new.cost = self.cost
         return new
 
-    @lru_cache(maxsize=100000)
-    def gen_solution(self, depth=0):
+    def gen_solution(self):
+        movesd = []
+        for n, amphipod in enumerate(self.amphis):
+            moves = self.gen_moves(amphipod)
+            for move in moves:
+                new = self.do_new()
+                new.move(new.amphis[n], move)
+                movesd.append(new)
+        
+        with Pool() as p:
+            for new in p.map(Situation._gen_solution, movesd):
+                continue
+        
+        return sorted(Situation.Best, key=lambda x: x.cost)[0].cost
+
+    @staticmethod
+    def _gen_solution(self, depth=0):
         if (self.cost > Situation.BestCost):
             return False
         mooved = False
-
+        movesd = []
         for n, amphipod in enumerate(self.amphis):
             moves = self.gen_moves(amphipod)
             if (len(moves) != 0):
@@ -209,28 +222,22 @@ class Situation():
             for move in moves:
                 new = self.do_new()
                 new.move(new.amphis[n], move)
-                Situation.Queue.put(new)
+                movesd.append(new)
 
-        if (not mooved and self.check_solution() == 0):
+        for new in sorted(movesd, key=lambda x: x.cost):
+            Situation._gen_solution(new, depth+1)
+
+        if (not mooved and self.check_solution()):
             if (self.cost < Situation.BestCost):
-                Situation.Best = self
+                Situation.Best.append(self)
                 Situation.BestCost = self.cost
-            return True
+                print(f"New best: {self.cost}")
 
     def __repr__(self) -> str:
         return "\n".join(map(lambda x: "".join(map(str, x)), self.board))
     
     def __str__(self) -> str:
         return repr(self)
-    
-    def __lt__(self, other):
-        return self.cost < other.cost
-    
-    def __eq__(self, other):
-        return str(self) == str(other)
-    
-    def __hash__(self):
-        return hash(str(self))
 
 def parse_data(data):
     data = data.splitlines()
@@ -245,14 +252,10 @@ def main(data):
     data = parse_data(data)
 
     situation = Situation(*data)
-    situation.gen_solution()
 
-    while not Situation.Queue.empty():
-        i = Situation.Queue.get()
-        if Situation.gen_solution(i) == True:
-            break
+    sol = situation.gen_solution()
 
-    return i.cost
+    return sol
 
 
 

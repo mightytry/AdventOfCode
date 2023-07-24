@@ -78,8 +78,6 @@ class Cube():
             for i in self.intersections:
                 i.intersection(c)
             self.intersections.append(c)
-            
-
 
     def __iter__(self):
         for x in self.x:

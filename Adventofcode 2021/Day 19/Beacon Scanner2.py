@@ -2,6 +2,8 @@ import sys
 sys.path.insert(0, '.')
 from tools import log
 
+#465 bei benni -> fix
+
 class Rotation:
     def __init__(self, x, y, z ,n) -> None:
         self.x = x
@@ -14,8 +16,8 @@ class Rotation:
             return self.rotate(self.x * o.x, self.y * o.y, self.z * o.z, self.n)
         if isinstance(o, Rotation):
             return self.rotate(self.x * o.x, self.y * o.y, self.z * o.z, o.n)
-    #divide
-
+    
+    # divide not used
     def __truediv__(self, o: object) -> object:
         if isinstance(o, Vector3):
             v = self.reverse_rotate(*o, self.n)
@@ -35,8 +37,9 @@ class Rotation:
                 return Vector3(_y, _z, _x) 
             case 5:
                 return Vector3(_z, _x, _y)
-            
-    def reverse_rotate(self, _x, _y, _z, n):
+    
+    # reverse_rotate not used
+    def reverse_rotate(self, _x, _y, _z, n): # problem here
         match (n):
             case 0:
                 return Vector3(_x, _y, _z)
@@ -115,7 +118,7 @@ class Position():
 
     def gen_positions(self, start, beacons):
         for beacon in beacons:
-            b, m, s = sorted((abs(beacon.pos.x- start.pos.x), abs(beacon.pos.y - start.pos.y), abs(beacon.pos.z - start.pos.z)))
+            b, m, s = sorted((abs(beacon.pos.x- start.pos.x), abs(beacon.pos.y - start.pos.y), abs(beacon.pos.z - start.pos.z))) #here is a problem !WRONG!
             self.positons.append(Vector3(b, m, s))
 
     def diff(self, other):
@@ -150,7 +153,7 @@ class Link:
                 if pos == pos2*r:
                     b2.scanner.rotation = r
                     b2.scanner.parent = b1.scanner
-                    b2.scanner.pos = (b1.scanner.pos + b1.scanner.calc(beacon1.pos - r*beacon2.pos))
+                    b2.scanner.pos = (b1.scanner.pos + b1.scanner.calc(beacon1.pos - r*beacon2.pos)) # the problem was here
                     return
 
 
@@ -162,14 +165,20 @@ class Positions:
 
     def init_positions(self, beacons):
         for n, beacon in enumerate(beacons):
-            self.positions.append(Position(beacon, beacons[n:] + beacons[:n], self.scanner))
+            self.positions.append(Position(beacon, beacons[n+1:] + beacons[:n], self.scanner))
 
     def diff(self, other):
+        a = []
         for pos1 in self.positions:
             for pos2 in other.positions:
                 d = pos1.diff(pos2)
-                if d >= 12:
-                    return Link(pos1, pos2)
+                a.append((d, pos1, pos2))
+
+        a = list(filter(lambda x: x[0] > 10, a))
+        if len(a) != 0:
+            if a[0][1].diff(a[0][2]) + a[0][2].diff(a[0][1]) == 22:
+                return Link(a[0][1], a[0][2])
+        
 
         return None
 
@@ -211,8 +220,8 @@ class Scanner:
             return self.parent.calc(self.rotation*stuff) # and problem here
 
     def __repr__(self) -> str:
-        return (str(self.name) + " " + str(self.pos))
-
+        return "Scanner: "+ (str(self.name) + " " + str(self.pos))
+    
     def __iter__(self):
         return iter(self.pos)
 
@@ -232,7 +241,6 @@ class Beacons:
                     if other.pos is None and scanner.pos is not None:
                         scanner.compare(other)
         
-        
         for scanner in self.scanners:
             for beacon in scanner.beacons:
                 p = self.get_beacon_pos(scanner, beacon)
@@ -244,12 +252,15 @@ class Beacons:
     def get_beacon_pos(scanner, beacon):
         b1 = scanner.pos + scanner.calc(beacon.pos)
         return b1# Vector3(b1.x, b2.y, b1.z)
-
+     
 
 def get_manhattan_distance(scanners):
-    min_ = min(map(sum, scanners))
-    max_ = max(map(sum, scanners))
-    return(max_ - min_)
+    maxi = 0
+    for scanner in scanners:
+        for scanner2 in scanners:
+            if scanner == scanner2: continue
+            maxi = n if (n := sum(map(abs,scanner2.pos - scanner.pos))) > maxi else maxi
+    return maxi
      
 
 def parse_data(data:str):
