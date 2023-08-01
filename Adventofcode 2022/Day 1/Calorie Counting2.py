@@ -41,20 +41,11 @@ def parse_data(data):
     return [Calories([int(x) for x in d.splitlines()]) for d in data]
 
 def get_biggest(calories:list[Calories]):
-    biggest1 = Calories([0])
-    biggest2 = Calories([0])
-    biggest3 = Calories([0])
-
-    for calorie in calories:
-        if biggest1 < calorie:
-            biggest3 = biggest2
-            biggest2 = biggest1
-            biggest1 = calorie
-        elif biggest2 < calorie:
-            biggest3 = biggest2
-            biggest2 = calorie
-        elif biggest3 < calorie:
-            biggest3 = calorie
+    biggest1 = max(calories)
+    calories.remove(biggest1)
+    biggest2 = max(calories)
+    calories.remove(biggest2)
+    biggest3 = max(calories)
 
     return biggest1.value + biggest2.value + biggest3.value
 

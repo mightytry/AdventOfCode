@@ -41,12 +41,8 @@ def parse_data(data):
     return [Calories([int(x) for x in d.splitlines()]) for d in data]
 
 def get_biggest(calories:list[Calories]):
-    biggest = calories[0]
-    for calorie in calories:
-        if biggest < calorie:
-            biggest = calorie
+    biggest = max(calories)
 
-    print(calories.index(biggest))
     return biggest.value
 
 @log
