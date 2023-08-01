@@ -71,9 +71,7 @@ class Wall():
         return "#"
 
 class Situation():
-    Queue = PriorityQueue()
-    Best = None
-    BestCost = math.inf
+    Queue = None
 
     def __init__(self, hallway_len, row1, row2, create = True):
         self.rows = [row1, row2]
@@ -198,8 +196,6 @@ class Situation():
 
     @lru_cache(maxsize=100000)
     def gen_solution(self, depth=0):
-        if (self.cost > Situation.BestCost):
-            return False
         mooved = False
 
         for n, amphipod in enumerate(self.amphis):
@@ -212,9 +208,6 @@ class Situation():
                 Situation.Queue.put(new)
 
         if (not mooved and self.check_solution() == 0):
-            if (self.cost < Situation.BestCost):
-                Situation.Best = self
-                Situation.BestCost = self.cost
             return True
 
     def __repr__(self) -> str:
@@ -242,6 +235,8 @@ def parse_data(data):
 
 @log
 def main(data):
+    Situation.Queue = PriorityQueue()
+    Situation.gen_solution.cache_clear()
     data = parse_data(data)
 
     situation = Situation(*data)

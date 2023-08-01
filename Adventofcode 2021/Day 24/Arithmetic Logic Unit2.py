@@ -25,7 +25,7 @@ class Part:
         parts = copy.deepcopy(parts)
         
         e = parts.pop(0)
-        for g in range(9, 0, -1):
+        for g in range(1, 10, 1):
             if (r := e.gen(parts, z, g)) != False:
                 r.append(g)
                 return r
@@ -71,9 +71,8 @@ def main(data):
     data = parse_data(data)
 
     p = data.pop(0)
-    for i in range(9, 0, -1):
-        if (r := p.gen(data, 0, i)) != None:
-            print(r)
+    for i in range(1, 10, 1):
+        if (r := p.gen(data, 0, i)) != False:
             r.append(i)
             return "".join(map(str,reversed(r)))
 

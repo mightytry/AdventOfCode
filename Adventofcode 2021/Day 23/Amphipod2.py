@@ -73,9 +73,7 @@ class Wall():
         return "#"
 
 class Situation():
-    Queue = PriorityQueue()
-    Best = None
-    BestCost = math.inf
+    Queue = None
 
     def __init__(self, hallway_len, row1, row2, row3, row4,  create = True):
         self.rows = [row1, row2, row3, row4]
@@ -164,7 +162,7 @@ class Situation():
             pass
         pos_moves = []
         free = all([self.board[x][amphipod.pos.pos].__class__ == Empty for x in range(Position.HALLWAY, amphipod.pos.line)])
-        if ((target := self.can_move_in_room(amphipod)) and free):
+        if ((target := self.can_move_in_room(amphipod)) and (free or amphipod.pos.line == Position.HALLWAY)):
             pos_moves.append((target.pos.line-amphipod.pos.line, target.pos.pos-amphipod.pos.pos))
         elif (amphipod.pos.line != Position.HALLWAY and free):
             for x in range(amphipod.pos.pos+1, len(self.board[Position.HALLWAY])-1):
@@ -210,8 +208,6 @@ class Situation():
 
     @lru_cache(maxsize=1000000)
     def gen_solution(self):
-        if (self.cost > Situation.BestCost):
-            return False
         mooved = False
 
         for n, amphipod in enumerate(self.amphis):
@@ -253,6 +249,8 @@ def parse_data(data):
 
 @log
 def main(data):
+    Situation.Queue = PriorityQueue()
+    Situation.gen_solution.cache_clear()
     data = parse_data(data)
 
     situation = Situation(*data)
@@ -263,7 +261,7 @@ def main(data):
         if Situation.gen_solution(i) == True:
             break
 
-    return i.cost, i
+    return i.cost
 
 
 
