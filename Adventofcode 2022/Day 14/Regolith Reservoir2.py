@@ -51,10 +51,12 @@ class Map:
         x = [x.x for i in self.lines for x in i.points]
         y = [x.y for i in self.lines for x in i.points]
         self.start = (min(x), min(y))
-        return [max(x)-min(x),max(y)- min(y) ]
+        self.end = (max(x), max(y)+1)
+        return [max(x)-min(x),max(y)- min(y)+1 ]
     
     def get_map(self):
-        return np.full((self.sizes[1]+1, self.sizes[0]+1), TYPE.AIR,dtype=str)
+        self.start = (500-self.start[0]+self.sizes[1]+self.start[0]+1, self.start[1])
+        return np.full((self.sizes[1]+1,  self.sizes[1]*2+1), TYPE.AIR,dtype=str)
     
     def fill_map(self):
         for line in self.lines:
@@ -65,6 +67,9 @@ class Map:
         pos = (500, 0)
         try:
             while True:
+                if pos[1] == self.end[1]:
+                    self[pos[0], pos[1]] = TYPE.SAND
+                    break
                 if self[pos[0], pos[1]+1] == TYPE.AIR:
                     pos = (pos[0], pos[1]+1)
                     continue
@@ -75,6 +80,8 @@ class Map:
                     pos = (pos[0]+ 1, pos[1]+1)
                     continue
                 else:
+                    if self[pos[0], pos[1]] == TYPE.SAND_SOURCE:
+                        return False
                     self[pos[0], pos[1]] = TYPE.SAND
                     break
             return True
@@ -115,7 +122,7 @@ def main(data):
 
     _map = Map(data)
 
-    c = 0
+    c = 1
     while _map.place_one():
         c+=1
 
