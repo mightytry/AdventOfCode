@@ -2,9 +2,6 @@ import math
 import sys
 sys.path.insert(0, '.')
 from tools import log
-import re
-
-_RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
 class Race():
     def __init__(self, time, record):
@@ -31,8 +28,8 @@ class Race():
 def parse_data(data):
     data = data.splitlines()
 
-    time = int("".join(_RE_COMBINE_WHITESPACE.sub(" ", data[0]).strip().split(" ")[1:]))
-    record = int("".join(_RE_COMBINE_WHITESPACE.sub(" ", data[1]).strip().split(" ")[1:]))
+    time = int("".join(data[0].split()[1:]))
+    record = int("".join(data[1].split()[1:]))
 
     data = Race(time, record)
 
@@ -42,7 +39,7 @@ def parse_data(data):
 def main(data):
     data = parse_data(data)
 
-    print(data.get_wins())
+    return (data.get_wins())
 
 
 

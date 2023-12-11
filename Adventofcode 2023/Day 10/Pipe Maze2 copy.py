@@ -29,8 +29,7 @@ class Types():
     SEVEN = MAP.index("7")
     F = MAP.index("F")
     EMPTY = MAP.index(".")
-    OPEN = [F, L]
-    CLOSE = [J, SEVEN]
+    P = ((F, L), (SEVEN, J))
 
 class Tile():
     Map = None
@@ -51,27 +50,16 @@ class Tile():
 
             if x < 0 or y < 0 or x >= len(self.Map[y]) or y >= len(self.Map): continue
             t = self.Map[y][x]
+
             self.connections.append(t)
         if self.parent not in self.connections and distance != 0:
+            self.connections = []
             return
         self.distance = distance
         for t in self.connections:
             if t.type != Types.EMPTY and (t.distance == -1 or t.distance > distance+1):
                 t.parent = self
                 t.eval(distance+1)
-    
-    def get_neighbours(self, is_inner):
-        self.is_inner =     def get_neighbours(self, is_inner):
-
-        for y in range(-1, 2):
-            for x in range(-1, 2):
-                if x == 0 and y == 0: continue
-                nx = self.x + x
-                ny = self.y + y
-                if nx < 0 or ny < 0 or ny >= len(self.Map) or nx >= len(self.Map[ny]): continue
-                t = self.Map[ny][nx]
-                if t.distance != -1 or t.is_inner == False: continue
-                t.get_neighbours(is_inner)
 
     @classmethod
     def get_start(cls):
@@ -103,12 +91,49 @@ def main(data):
     data = parse_data(data)
 
     data.eval()
+    
+    s = []
+    for d in Types.MAP_ROWS[data.type]:
+        x = data.x + d[0]
+        y = data.y + d[1]
+        if x < 0 or y < 0 or x >= len(Tile.Map[y]) or y >= len(Tile.Map): continue
+        t = Tile.Map[y][x]
+        if data in t.connections:
+            s.append(d)
+
+    for d in Types.MAP_ROWS:
+        if s[0] in d and s[1] in d:
+            data.type = Types.MAP_ROWS.index(d)
+            break
 
     c = 0
 
+    for y in Tile.Map:
+        is_inner = False
+        n = 0
+        p = None
+        for x in y:
+            if (x.distance == -1 and is_inner):
+                n += 1
+            elif (x.distance != -1):
+                if (is_inner and n != 0):
+                    c += n
+                    #for t in n: t.is_inner = True
+                    n = 0
+                    is_inner = False
+                elif (x.type == Types.CROSS):
+                    continue
+                elif (p != None and Types.P[0].__contains__(p.type)):
+                    if (Types.P[1][Types.P[0].index(p.type)] == x.type):
+                        is_inner = not is_inner
+                else:
+                    is_inner = not is_inner
+                p = x
+
+        
     #return "\n".join(["".join("".join(str(int(y.is_inner) if y.is_inner != None else y) for y in x)) for x in Tile.Map])
-    #return "\n".join(["".join("".join(str(1 if y.distance != -1 else y) for y in x)) for x in Tile.Map])
-    return sum((1 if x.is_inner else 0) for x in Tile.as_one_dim())
+    #return "\n".join(["".join("".join(str(y if y.distance != -1 else ".") for y in x)) for x in Tile.Map])
+    return c
 
 
 

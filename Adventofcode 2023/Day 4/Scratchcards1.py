@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '.')
-from tools import log
+from tools import log, timer
 # 5:40
 class Game:
     def __init__(self, id, nyh: set, wn: set):
@@ -17,10 +17,11 @@ def parse_data(data):
         yield Game(n, set(int(x) for x in l[0].split(" ")), set(int(x) for x in l[1].split(" ")))
 
 @log
+@timer
 def main(data):
     data = parse_data(data)
 
-    return sum(2**(len(x.get_win())-1) for x in data if len(x.get_win()) > 0)
+    return sum(2**(r-1) for x in data if (r := len(x.get_win())) > 0)
 
 
 

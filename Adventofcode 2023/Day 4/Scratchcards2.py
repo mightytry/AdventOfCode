@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '.')
-from tools import log
+from tools import log, timer
 # 6:40
 class Game:
     def __init__(self, id, nyh: set, wn: set):
