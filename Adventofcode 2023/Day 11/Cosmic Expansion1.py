@@ -22,7 +22,6 @@ class Galaxy:
     def __repr__(self):
         return f"Galaxy({self.x}, {self.y})"
 
-
 def parse_data(data: str):
     o = 0
     data = [[y for y in x] for x in data.splitlines()]

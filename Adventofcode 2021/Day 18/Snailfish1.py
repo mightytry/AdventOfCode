@@ -1,7 +1,7 @@
 import json
 from math import ceil, floor
 import sys
-sys.path.insert(0, 'z:/Cloud/Programieren/Other/Adventofcode/')
+sys.path.insert(0, '.')
 from tools import log
 
 class Number():

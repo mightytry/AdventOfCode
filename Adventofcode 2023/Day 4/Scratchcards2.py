@@ -33,6 +33,7 @@ def get_winnings(game, games):
 
 
 @log
+@timer
 def main(data):
     data = list(parse_data(data))
 

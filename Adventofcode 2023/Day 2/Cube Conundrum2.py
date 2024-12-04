@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '.')
-from tools import log
+from tools import log, timer
 
 class Colors:
     red = 0
@@ -46,6 +46,7 @@ def parse_data(data):
 
 
 @log
+@timer
 def main(data):
     data = parse_data(data)
 

@@ -1,0 +1,170 @@
+import sys
+import time
+sys.path.insert(0, '.')
+from tools import log, timer
+
+sys.setrecursionlimit(1000000)
+
+class Beam:
+    def __init__(self, x, y, direction):
+        self.x = x
+        self.y = y
+        self.direction = direction
+        self.tiles = []
+
+    def runback(self, dis:int = 0):
+        for i, tile in enumerate(self.tiles):
+            tile[0].visited[tile[1]] += len(self.tiles) - i + dis
+
+    def getloop(self, tile):
+        try:
+            index = self.tiles.index((tile, self.direction))
+            loop_tiles = self.tiles[index:]
+            loop = Loop(loop_tiles)
+            for t in loop_tiles:
+                t[0].visited[t[1]] = loop
+            return loop
+        except ValueError:
+            return None
+
+    def __repr__(self) -> str:
+        return f"Beam[{self.x},{self.y},{self.direction}]"
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.direction))
+    
+class Loop:
+    def __init__(self, tiles):
+        self.tiles = tiles
+        self.size = len(tiles)
+    
+    def __repr__(self) -> str:
+        return f"{self.size}"
+
+class Tile:
+    def __init__(self, x, y, type):
+        self.x = x
+        self.y = y
+        self.visited = {}
+        self.type = type
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y))
+    
+    def get_beams(self, beam):
+        match self.type:
+            case ".":
+                return [beam]
+            case "/":
+                beam.direction = tuple(map(lambda x: x-sum(beam.direction), beam.direction))
+                return [beam]
+            case "\\":
+                if beam.direction[0] == -1 or beam.direction[1] == 1:
+                    beam.direction = (beam.direction[0]+1, beam.direction[1]-1)
+                    return [beam]
+                else:
+                    beam.direction = (beam.direction[0]-1, beam.direction[1]+1)
+                    return [beam]
+            case "-":
+                if beam.direction[0] == 0:
+                    beam.direction = (1, 0)
+                    beam2 = Beam(beam.x, beam.y, (-1, 0))
+                    return [beam, beam2] 
+                else:
+                    return [beam]
+            case "|":
+                if beam.direction[1] == 0:
+                    beam.direction = (0, 1)
+                    beam2 = Beam(beam.x, beam.y, (0, -1))
+                    beam2.tiles = beam.tiles
+                    return [beam, beam2]
+                else:
+                    return [beam]
+                
+    def __repr__(self) -> str:
+        return f"{self.x}, {self.y}, {self.visited}"
+    
+class Map:
+    def __init__(self, data):
+        self.data = list(data)
+        self.width = len(self.data[0])
+        self.height = len(self.data)
+
+    def next(self, beams:set[Beam], visited = set(), visited_loops = set(), dis:int = 0):
+        for beam in beams:
+            new_tile = self.get_tile(beam)
+            if (new_tile is None):
+                continue
+            
+            if ((loop := new_tile.visited.get(beam.direction, None)) is not None):
+                if (loop != 0 and loop not in visited_loops):
+                    dis += loop.size
+                else:
+                    loop = beam.getloop(new_tile)
+                    if (loop is not None):
+                        visited_loops.add(loop)
+                continue
+                
+
+            if (new_tile in visited):
+                dis -= 1
+
+            visited.add(new_tile)
+            beam.tiles.append((new_tile, beam.direction))
+            new_tile.visited[beam.direction] = 0
+            dis += self.next(new_tile.get_beams(beam), visited, visited_loops) + 1
+        return dis
+
+    def get_tile(self, beam:Beam, set:bool = True):
+        if beam.x + beam.direction[0] < 0 or beam.x + beam.direction[0] >= self.width:
+            return None
+        if beam.y + beam.direction[1] < 0 or beam.y + beam.direction[1] >= self.height:
+            return None
+        
+        if set:
+            beam.x += beam.direction[0]
+            beam.y += beam.direction[1]
+        else:
+            return self.data[beam.y + beam.direction[1]][beam.x + beam.direction[0]]
+        return self.data[beam.y][beam.x]
+    
+    def print(self, beams) -> str:
+        tilemap = set()
+        for beam in beams:
+            tilemap.add(self.data[beam.y][beam.x])
+        return "\n".join(["".join([(str(tile) if len(tile.visited) == 0 else ("#" if tile not in tilemap else "b")) for tile in row]) for row in self.data])
+
+def parse_data(data:str):
+    return Map([Tile(m, n, y) for m, y in enumerate(x)] for n, x in enumerate(data.splitlines()))
+
+@timer
+@log
+def main(data):
+    data = parse_data(data)
+    
+    data.next([Beam(-1, 0, (1, 0))], set(), set())
+
+    for i, row in enumerate(data.data):
+        for j, tile in enumerate(row):
+            a = {}
+            for v in tile.visited:
+                if tile.visited[v] != 0:
+                    a[v] = tile.visited[v]
+            tile.visited = a
+    
+    return data.next([Beam(-1, 0, (1, 0))], set(), set())
+
+
+
+if __name__ == "__main__":
+    data1 = open("./Day 16/data1", "r").read()
+    data2 = open("./Day 16/data2", "r").read()
+
+    if data1 != "":
+        main(data1)
+    else:
+        print("No data1 found")
+    if data2 != "":
+        main(data2)
+    else:
+        print("No data2 found")
