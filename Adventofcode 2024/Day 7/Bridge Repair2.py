@@ -17,6 +17,8 @@ class Equation:
     def solve(self, n, i):
         if i == len(self.numb):
             return n == self.res
+        if (n > self.res): #optimization
+            return False
         for f in self.methods(n, self.numb[i]):
             if self.solve(f, i+1):
                 return True
