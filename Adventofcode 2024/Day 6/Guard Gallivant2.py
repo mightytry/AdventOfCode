@@ -18,9 +18,6 @@ def parse_data(data):
 def is_in_bounds(data, x, y):
     return x < len(data[0])-1 and x > 0 and y < len(data)-1 and y > 0
 
-def in_bounds(data, x, y):
-    return x < len(data[0]) and x >= 0 and y < len(data) and y >= 0
-
 def trywalk(data, prev, new, direction):
     met = set()
     while (is_in_bounds(data, prev[0], prev[1])):
