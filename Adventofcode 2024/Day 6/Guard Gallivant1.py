@@ -15,13 +15,15 @@ def rotate(direction):
 def parse_data(data):
     return [list(x.strip()) for x in data]
 
+
+@timer
 def main(data):
     data = parse_data(data)
     start = get_start(data)
     direction = (0, -1)
     result = 0
     while (start[0] < len(data[0])-1 and start[0] > 0 and start[1] < len(data)-1 and start[1] > 0):
-        if (data[start[1]+direction[1]][start[0]+direction[0]] == "#"):
+        while (data[start[1]+direction[1]][start[0]+direction[0]] == "#"):
             direction = rotate(direction)
         if (data[start[1]][start[0]] != "X"):
             result += 1
@@ -36,8 +38,8 @@ def main(data):
 
 
 if __name__ == "__main__":
-    SUBMIT = True
-    for num in range(1):
+    SUBMIT = False
+    for num in range(2):
         # last line is expected output
         example = open(f"./Day 6/example{num}", "r").readlines()
         print("Got:", main(example[0:-1]), "Expected:", example[-1].strip().split(",")[0])

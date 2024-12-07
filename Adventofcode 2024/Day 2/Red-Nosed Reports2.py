@@ -7,22 +7,23 @@ class Level():
     def __init__(self, row):
         self.data = list(map(int, row.strip().split(" ")))
 
-    def is_safe(self, order, start = 0,bad = False):
-        data = self.data[start:]
-        p = data[0]
-        for n in data[1:]:
-            if abs(p-n) > 3 or abs(p-n) < 1:
-                if bad:
-                    return False
-                bad = True
-                continue
-            if order != (p < n):
-                if bad:
-                    return False
-                bad = True
-                continue
-            p = n
-        return True
+    @property
+    def is_safe(self):
+        for x in range(len(self.data)):
+            data = self.data[:x] + self.data[x+1:] 
+            order = None
+            p = data[0]
+            for n in data[1:]:
+                if abs(p-n) > 3 or abs(p-n) < 1:
+                    break
+                if order is None:
+                    order = p < n
+                if order != (p < n):
+                    break
+                p = n
+            else:
+                return True
+        return False
 
 def parse_data(data):
     data = [Level(row) for row in data]
@@ -31,14 +32,12 @@ def parse_data(data):
 def main(data):
     data = parse_data(data)
 
-    return sum([(l.is_safe(True) or l.is_safe(False) or l.is_safe(True, 1, True)or l.is_safe(False, 1, True)) for l in data])
-
-
+    return sum([l.is_safe for l in data])
 
 
 if __name__ == "__main__":
     SUBMIT = False
-    for num in range(1):
+    for num in range(2):
         # last line is expected output
         example = open(f"./Day 2/example{num}", "r").readlines()
         print("Got:", main(example[0:-1]), "Expected:", example[-1].strip().split(",")[1])

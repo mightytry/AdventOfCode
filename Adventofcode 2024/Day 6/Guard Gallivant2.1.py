@@ -24,39 +24,38 @@ def in_bounds(data, x, y):
 def trywalk(data, prev, new, direction):
     met = set()
     while (is_in_bounds(data, prev[0], prev[1])):
-        while (data[(ny := prev[1]+direction[1])][(nx := prev[0]+direction[0])] == "#" or (nx, ny) == new):
+        while (data[(ny := prev[1]+direction[1])][(nx := prev[0]+direction[0])] == "#" or [nx, ny] == new):
             direction = rotate(direction)
-            if ((prev, direction) in met):
+            if ((prev[0], prev[1], direction) in met):
                 return True
             else:
-                met.add((prev, direction))
-        prev = (nx, ny)
+                met.add((prev[0], prev[1], direction))
+        prev[0] += direction[0]
+        prev[1] += direction[1]
     return False
 
 
 @timer
 def main(data):
     data = parse_data(data)
-    start = tuple(get_start(data))
+    start = get_start(data)
+    s= start.copy()
     direction = (0, -1)
-    result = 0
+    result = set()
     while (is_in_bounds(data, start[0], start[1])):
-        while (data[(ny := start[1]+direction[1])][(nx := start[0]+direction[0])] == "#"):
+        while (data[start[1]+direction[1]][start[0]+direction[0]] == "#"):
             direction = rotate(direction)
+        start[0] += direction[0]
+        start[1] += direction[1]
+        if (s != start and trywalk(data, s.copy(), start, (0, -1))):
+            result.add((start[0], start[1]))
 
-        if (data[ny][nx] != "X" and trywalk(data, start, (nx, ny), direction)):
-            result += 1
-        start = (nx, ny)
-        data[ny][nx] = "X"
-
-    return result
-
-
+    return len(result)
 
 
 if __name__ == "__main__":
     SUBMIT = False
-    for num in range(2):
+    for num in range(1):
         # last line is expected output
         example = open(f"./Day 6/example{num}", "r").readlines()
         print("Got:", main(example[0:-1]), "Expected:", example[-1].strip().split(",")[1])
