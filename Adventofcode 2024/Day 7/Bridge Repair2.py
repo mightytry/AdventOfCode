@@ -9,7 +9,7 @@ class Equation:
         self.numb = numb
 
     @staticmethod
-    def mathods(n1, n2):
+    def methods(n1, n2):
         yield n1 + n2
         yield n1 * n2
         yield int(str(n1) + str(n2))
@@ -17,11 +17,11 @@ class Equation:
     def solve(self, n, i):
         if i == len(self.numb):
             return n == self.res
-        for f in self.mathods(n, self.numb[i]):
+        for f in self.methods(n, self.numb[i]):
             if self.solve(f, i+1):
                 return True
         return False
-    
+
     def result(self):
         if (self.solve(self.numb[0], 1)):
             return self.res
@@ -30,7 +30,7 @@ class Equation:
 def parse_data(data):
     return [Equation(int(x.split(":")[0]), list(map(int, x.split(":")[1].strip().split(" ")))) for x in data]
 
-
+@timer
 def main(data):
     data = parse_data(data)
 

@@ -7,7 +7,7 @@ def get_start(data):
     for y, row in enumerate(data):
         for x, c in enumerate(row):
             if (c == "^"):
-                return [x, y]
+                return (x, y)
 
 def rotate(direction):
     return (-direction[1], direction[0])
@@ -34,7 +34,7 @@ def trywalk(data, prev, new, direction):
 @timer
 def main(data):
     data = parse_data(data)
-    start = tuple(get_start(data))
+    start = get_start(data)
     direction = (0, -1)
     result = 0
     while (is_in_bounds(data, start[0], start[1])):
