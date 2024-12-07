@@ -29,6 +29,7 @@ def parse_data(data):
     data = [Level(row) for row in data]
     return data
 
+@timer
 def main(data):
     data = parse_data(data)
 
