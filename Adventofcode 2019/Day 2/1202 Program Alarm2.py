@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 sys.path.insert(0, '.')
 from tools import log
@@ -9,14 +10,13 @@ def parse_data(data):
 
 @log
 def main(data):
-    data = parse_data(data)
-
+    cpy = parse_data(data)
+    
     o = 0
-
     while (data[0] != 19690720):
-        data[1] = o
+        data = deepcopy(cpy)
+        data[1] = o//100
         data[2] = o%100
-
         i = 0
         while (True):
             if data[i] == 1:
@@ -26,8 +26,10 @@ def main(data):
             else:
                 break
             i += 4
+        o += 1
 
-    return data[0]
+
+    return o-1
 
 
 if __name__ == "__main__":

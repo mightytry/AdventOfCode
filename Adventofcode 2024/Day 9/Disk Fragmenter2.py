@@ -4,46 +4,53 @@ from tools import log, timer
 from aocd import submit
 
 class Block:
-    def __init__(self, id, co):
+    def __init__(self, id, co, free):
         self.id = id
         self.co = co
-    
-    def __repr__(self):
-        return "B: " + str(self.id)
+        self.free = free
 
-class Free:
-    def __init__(self, co):
-        self.co = co
     def __repr__(self):
-        return "S: " +str(self.co)
+        return str(self.id)*self.co + "."*self.free
     
+    def get_res(self, i):
+        res = self.id*(i*self.co+ self.co*(self.co-1)//2)
+        advance = self.co + self.free
+        return res, advance
+
 
 def parse_data(data):
-    return [(Block(i//2, int(n)) if not i % 2 else Free(int(n))) for i, n in enumerate(data[0].strip())]
+    data = data[0].strip()
+    return [(Block(i//2, int(data[i]), int(0 if len(data) == i+1 else data[i+1]))) for i in range(0,len(data), 2)]
 
 def main(data):
     data = parse_data(data)
     i = 0
     res = 0
-    n = []
-    while (len(data) != 0):
-        if isinstance(data[-1], Free):
-            g = data.copy()
-            for d in g:
-                if (isinstance(d, Block) and data[0].co >= d.co):
-                    n.append(d)
-                    data.remove(d)
-                    data[-1].co -= d.co
-            d = data.pop()
-        else:
-            n.append(data.pop())
+    bi = 0
+    g = len(data)-1
+    while (g+bi != 0):
+        i = g + bi
+        b = data[i]
+        d = data[i-1]
+        for j, c in enumerate(data[:i]):
+            if (c.free >= b.co):
+                d.free += b.co + b.free
+                b.free = c.free-b.co
+                c.free = 0
+                data.pop(i)
+                data.insert(j+1, b)
+                bi += 1
+                break
+        g-=1 
+    
+    n = 0
+    for b in data:
+        re, ad = b.get_res(n)
+        n += ad #+1
+        res += re
 
-    for b in n:
-        for c in range(b.co):
-            res += i * b.id
-            i +=1
-
-    return n
+    
+    return res
 
 
 
@@ -56,7 +63,7 @@ if __name__ == "__main__":
         print("Got:", main(example[0:-1]), "Expected:", example[-1].strip().split(",")[1])
     data1 = open("./Day 9/data1", "r").readlines()
 
-    if data1== "":
+    if data1 != "":
         if SUBMIT:
             submit(main(data1), day=9, year=2024)
         else:
